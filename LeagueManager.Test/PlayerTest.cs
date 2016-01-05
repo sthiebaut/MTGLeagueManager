@@ -1,21 +1,22 @@
 ﻿using System;
 using Edument.CQRS;
 using MTGLeagueManager;
+using MTGLeagueManager.Commands;
+using MTGLeagueManager.Events;
 using NUnit.Framework;
 
 namespace LeagueManager.Test
 {
-
     public class PlayerTest : BDDTest<PlayerAggregate>
     {
-        private Guid testId;
-        private string name;
+        private Guid _testId;
+        private string _name;
 
         [SetUp]
         public void Setup()
         {
-            testId = Guid.NewGuid();
-            name = "Derek";
+            _testId = Guid.NewGuid();
+            _name = "Derek";
         }
 
         [Test]
@@ -23,17 +24,30 @@ namespace LeagueManager.Test
         {
             Test(
                 Given(),
-                When(new CreatePlayer(testId, name)),
-                Then(new PlayerCreated(testId, name))
+                When(new CreatePlayer(_testId, _name)),
+                Then(new PlayerCreated(_testId, _name))
             );
         }
+
+
+        [Test]
+        public void CannotCreateSamePlayerTwice()
+        {
+            Test(
+                Given(new PlayerCreated(_testId, _name)),
+                When(new CreatePlayer(_testId, _name)),
+                ThenFailWith<PlayerAlreadyCreated>()
+            );
+        }
+
+
 
         [Test]
         public void CannotRenameWithNotCreatedPlayer()
         {
             Test(
                 Given(),
-                When(new RenamePlayer(testId, "newName")),
+                When(new RenamePlayer(_testId, "newName")),
                 ThenFailWith<PlayerNotCreated>());
         }
 
@@ -41,9 +55,9 @@ namespace LeagueManager.Test
         public void CanRenameAnExistingPlayer()
         {
             Test(
-                Given(new PlayerCreated(testId, name)),
-                When(new RenamePlayer(testId, name)),
-                Then(new PlayerRenamed(testId, name))
+                Given(new PlayerCreated(_testId, _name)),
+                When(new RenamePlayer(_testId, _name)),
+                Then(new PlayerRenamed(_testId, _name))
             );
         }
 
@@ -52,7 +66,7 @@ namespace LeagueManager.Test
         {
             Test(
                 Given(),
-                When(new RemovePlayer(testId)),
+                When(new RemovePlayer(_testId)),
                 ThenFailWith<PlayerNotCreated>()
             );
         }
@@ -62,9 +76,9 @@ namespace LeagueManager.Test
         public void CanRemoveAnExistingPlayer()
         {
             Test(
-                Given(new PlayerCreated(testId, name)),
-                When(new RemovePlayer(testId)),
-                Then(new PlayerRemoved(testId))
+                Given(new PlayerCreated(_testId, _name)),
+                When(new RemovePlayer(_testId)),
+                Then(new PlayerRemoved(_testId))
             );
         }
 
@@ -72,9 +86,9 @@ namespace LeagueManager.Test
         public void CannotRemoveAPlayerTwice()
         {
             Test(
-                 Given(new PlayerCreated(testId, name),
-                       new PlayerRemoved(testId)),
-                When(new RemovePlayer(testId)),
+                 Given(new PlayerCreated(_testId, _name),
+                       new PlayerRemoved(_testId)),
+                When(new RemovePlayer(_testId)),
                 ThenFailWith<PlayerAlreadyRemoved>()
             );
         }

@@ -1,120 +1,87 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using MTGLeagueManager.Model;
+using Edument.CQRS;
+using MTGLeagueManager;
+using MTGLeagueManager.Commands;
+using MTGLeagueManager.Events;
+using NUnit.Framework;
 
 namespace LeagueManager.Test
 {
-    [TestClass]
-    public class MatchTest
+    public class MatchTest : BDDTest<MatchAggregate>
     {
-        [TestInitialize]
+        private Guid _playerId1;
+        private Guid _playerId2;
+        private Guid _matchId;
+
+        [SetUp]
         public void Setup()
         {
+            _playerId1 = Guid.NewGuid();
+            _playerId2 = Guid.NewGuid();
+            _matchId = Guid.NewGuid();
         }
 
-        [TestMethod]
-        public void FirstMatchEveryOneIsEqual()
+        [Test]
+        public void CanCreateNewMatch()
         {
-            var stephane = new Player("Stephane");
-            var thomas = new Player("Thomas");
-            
-            var m1 = new Match(stephane, thomas, new DateTime(2015, 12, 21));
-
-            var winP1 = m1.GetWinPercentFor(stephane, thomas);
-            var winP2 = m1.GetWinPercentFor(thomas, stephane);
-            
-            Assert.AreEqual(0.5, winP1);
-            Assert.AreEqual(0.5, winP2);
+            Test(
+                Given(),
+                When(new CreateMatch(_matchId, _playerId1, _playerId2, DateTime.Today)),
+                Then(new MatchCreated(_matchId, _playerId1, _playerId2, DateTime.Today))
+            );
         }
 
-        [TestMethod]
-        public void FirstMatchPointsComputeIfP1Win()
+        [Test]
+        public void CannotRemoveNonExistingMatch()
         {
-            var stephane = new Player("Stephane");
-            var thomas = new Player("Thomas");
-
-            var m1 = new Match(stephane, thomas, new DateTime(2015, 12, 21));
-
-            m1.UpdateScore(2, 0);
-
-            Assert.AreEqual(8, m1.Points1);
-            Assert.AreEqual(-8, m1.Points2);
-
-            Assert.AreEqual(1600 + 8, stephane.Points);
-            Assert.AreEqual(1600 + -8, thomas.Points);
+            Test(
+                Given(),
+                When(new RemoveMatch(_matchId)),
+                ThenFailWith<MatchNotCreated>()
+            );
         }
 
-        [TestMethod]
-        public void FirstMatchPointsComputeIfP2Win()
+        [Test]
+        public void CanRemoveMatch()
         {
-            var stephane = new Player("Stephane");
-            var thomas = new Player("Thomas");
-
-            var m1 = new Match(stephane, thomas, new DateTime(2015, 12, 21));
-
-            m1.UpdateScore(0, 2);
-
-            Assert.AreEqual(-8, m1.Points1);
-            Assert.AreEqual(8, m1.Points2);
-
-            Assert.AreEqual(1600 + -8, stephane.Points);
-            Assert.AreEqual(1600 + 8, thomas.Points);
+            Test(
+                Given(new MatchCreated(_matchId, _playerId1, _playerId2, DateTime.Today)),
+                When(new RemoveMatch(_matchId)),
+                Then(new MatchRemoved(_matchId))
+            );
         }
 
-        [TestMethod]
-        public void SecondMatchPointsComputeIfP1Win()
+        [Test]
+        public void CannotRemoveMatchTwice()
         {
-            var arnault = new Player("Arnault");
-            var sylvain = new Player("Sylvain");
-            var stephane = new Player("Stephane");
-            var mickael = new Player("Mickael");
-            var thomas = new Player("Thomas");
-            var olivier = new Player("Olivier");
-
-            //round1
-            var r1m1 = new Match(stephane, thomas, new DateTime(2015, 12, 21));
-            r1m1.UpdateScore(2, 0);
-            var r1m2 = new Match(arnault, sylvain, new DateTime(2015, 12, 21));
-            r1m2.UpdateScore(2, 1);
-            var r1m3 = new Match(mickael, olivier, new DateTime(2015, 12, 21));
-            r1m3.UpdateScore(2, 1);
-            
-            Assert.AreEqual(1600 + 8, stephane.Points);
-            Assert.AreEqual(1600 + -8, thomas.Points);
-            Assert.AreEqual(1600 + 8, arnault.Points);
-            Assert.AreEqual(1600 + -8, sylvain.Points);
-            Assert.AreEqual(1600 + 8, mickael.Points);
-            Assert.AreEqual(1600 + -8, olivier.Points);
-
-            //round2
-            var r2m1 = new Match(stephane, sylvain, new DateTime(2015, 12, 22));
-            r2m1.UpdateScore(2, 0);
-            var r2m2 = new Match(arnault, mickael, new DateTime(2015, 12, 22));
-            r2m2.UpdateScore(2, 1);
-            var r2m3 = new Match(olivier, thomas, new DateTime(2015, 12, 23));
-            r2m3.UpdateScore(2, 1);
-
-            Assert.AreEqual(1600 + 8 + 8, stephane.Points);
-            Assert.AreEqual(1600 + -8 + -8, thomas.Points);
-            Assert.AreEqual(1600 + 8 + 8, arnault.Points);
-            Assert.AreEqual(1600 + -8 + -8, sylvain.Points);
-            Assert.AreEqual(1600 + 8 + -8, mickael.Points);
-            Assert.AreEqual(1600 + -8 + 8, olivier.Points);
-
-            //round3
-            var r3m1 = new Match(arnault, stephane, new DateTime(2015, 12, 24));
-            r3m1.UpdateScore(2, 1);
-            var r3m2 = new Match(mickael, thomas, new DateTime(2015, 12, 28));
-            r3m2.UpdateScore(0, 2);
-            var r3m3 = new Match(olivier, sylvain, new DateTime(2015, 12, 29));
-            r3m3.UpdateScore(2, 0);
-
-            Assert.AreEqual(1600 + 8 + 8 + -8, stephane.Points);
-            Assert.AreEqual(1600 + -8 + -8 + 8, thomas.Points);
-            Assert.AreEqual(1600 + 8 + 8 + 8, arnault.Points);
-            Assert.AreEqual(1600 + -8 + -8 + -8, sylvain.Points);
-            Assert.AreEqual(1600 + 8 + -8 + -8, mickael.Points);
-            Assert.AreEqual(1600 + -8 + 8 + 8, olivier.Points);
+            Test(
+                Given(new MatchCreated(_matchId, _playerId1, _playerId2, DateTime.Today),
+                      new MatchRemoved(_matchId)),
+                When(new RemoveMatch(_matchId)),
+                ThenFailWith<MatchAlreadyRemoved>()
+            );
         }
+
+        [Test]
+        public void CanPlayExitingMatch()
+        {
+            Test(
+                Given(new MatchCreated(_matchId, _playerId1, _playerId2, DateTime.Today)),
+                When(new PlayMatch(_matchId, 2, 0)),
+                 Then(new MatchPlayed(_matchId, 2, 0))
+            );
+        }
+
+        [Test]
+        public void CannotPlayMatchTwice()
+        {
+            Test(
+                Given(new MatchCreated(_matchId, _playerId1, _playerId2, DateTime.Today),
+                      new MatchPlayed(_matchId, 2, 0)),
+                When(new PlayMatch(_matchId, 2, 0)),
+                 ThenFailWith<MatchAlreadyPlayed>()
+            );
+        }
+
     }
 }

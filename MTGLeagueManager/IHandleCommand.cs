@@ -2,7 +2,7 @@
 
 namespace MTGLeagueManager
 {
-    public interface IHandleCommand<TCommand>
+    public interface IHandleCommand<in TCommand>
     {
         IEnumerable Handle(TCommand c);
     }

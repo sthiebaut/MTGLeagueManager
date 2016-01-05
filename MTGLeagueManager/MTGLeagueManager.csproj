@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EventStore.ClientAPI, Version=3.4.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EventStore.Client.3.4.0\lib\net40\EventStore.ClientAPI.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -42,20 +46,37 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\CreateMatch.cs" />
+    <Compile Include="Commands\CreatePlayer.cs" />
+    <Compile Include="Commands\RemoveMatch.cs" />
+    <Compile Include="Commands\RenamePlayer.cs" />
+    <Compile Include="Core\MessageDispatcher.cs" />
+    <Compile Include="Core\IEventStore.cs" />
+    <Compile Include="Core\ISubscribeTo.cs" />
+    <Compile Include="Events\MatchCreated.cs" />
+    <Compile Include="Events\MatchRemoved.cs" />
+    <Compile Include="Events\PlayerCreated.cs" />
+    <Compile Include="Events\PlayerRemoved.cs" />
+    <Compile Include="Events\PlayerRenamed.cs" />
     <Compile Include="Exceptions.cs" />
-    <Compile Include="Commands.cs" />
+    <Compile Include="Commands\RemovePlayer.cs" />
     <Compile Include="Core\Aggregate.cs" />
     <Compile Include="Core\IApplyEvent.cs" />
-    <Compile Include="Events.cs" />
+    <Compile Include="Events\Event.cs" />
     <Compile Include="IHandleCommand.cs" />
+    <Compile Include="MatchAggregate.cs" />
     <Compile Include="Message.cs" />
     <Compile Include="Model\League.cs" />
     <Compile Include="PlayerAggregate.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repository\IPlayerRepository.cs" />
+    <Compile Include="Repository\PlayerRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ReadModel\" />

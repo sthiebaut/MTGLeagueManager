@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections;
+using MTGLeagueManager.Commands;
 using MTGLeagueManager.Core;
+using MTGLeagueManager.Events;
+using MTGLeagueManager.Repository;
 
 namespace MTGLeagueManager
 {
@@ -11,10 +14,17 @@ namespace MTGLeagueManager
         public string Name { get; private set; }
         public bool IsRemoved { get; private set; }
 
+        public PlayerAggregate()
+        {
+        }
+
         #region Command Handlers
 
         public IEnumerable Handle(CreatePlayer c)
         {
+            if (Id == c.Id)
+                throw new PlayerAlreadyCreated();
+
             yield return new PlayerCreated(c.Id, c.Name);
         }
 
