@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using EventStore.ClientAPI;
+using MTGLeagueManager.Commands;
 
 namespace MTGLeagueManager
 {
@@ -13,35 +8,24 @@ namespace MTGLeagueManager
         static void Main(string[] args)
         {
             Console.ReadLine();
-
-            var connection =
-                EventStoreConnection.Create(new IPEndPoint(IPAddress.Loopback, 1113));
+            //var connection = EventStoreConnection.Create(new IPEndPoint(IPAddress.Loopback, 1113));
 
             // Don't forget to tell the connection to connect!
-            connection.ConnectAsync().Wait();
+          //  connection.ConnectAsync().Wait();
+        //    connection.DeleteStreamAsync("MTGEventStore", 0);
 
-            var myEvent = new EventData(Guid.NewGuid(), "testEvent", false,
-                                        Encoding.UTF8.GetBytes("some data"),
-                                        Encoding.UTF8.GetBytes("some metadata"));
+            Domain.Setup();
 
-            var myEvent2 = new EventData(Guid.NewGuid(), "otherTestEvent", false,
-                                        Encoding.UTF8.GetBytes("some other data"),
-                                        Encoding.UTF8.GetBytes("some other metadata"));
+            var players = Domain.PlayerListQueries.GetPlayers();
 
-            connection.AppendToStreamAsync("test-stream", ExpectedVersion.Any, myEvent).Wait();
-            connection.AppendToStreamAsync("test-stream", ExpectedVersion.Any, myEvent2).Wait();
+            Console.WriteLine("Players : {0}", players.Count);
 
-            var streamEvents = connection.ReadStreamEventsForwardAsync("test-stream", 0, 20, false).Result;
+            Console.ReadLine();
 
-            foreach (var resolvedEvent in streamEvents.Events)
-            {
-                var returnedEvent = resolvedEvent.Event;
+            Domain.Dispatcher.SendCommand(new CreatePlayer(Guid.NewGuid(), "Sylvain"));
 
-                Console.WriteLine("Read event with data: {0}, metadata: {1}",
-                    Encoding.UTF8.GetString(returnedEvent.Data),
-                    Encoding.UTF8.GetString(returnedEvent.Metadata));
-            }
-           
+            players = Domain.PlayerListQueries.GetPlayers();
+            Console.WriteLine("Players : {0}", players.Count);
 
             Console.ReadLine();
         }

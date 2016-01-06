@@ -6,5 +6,6 @@ namespace MTGLeagueManager.Repository
     {
         PlayerAggregate GetById(Guid id);
         void Add(PlayerAggregate aggregateRoot);
+        void Remove(Guid id);
     }
 }
