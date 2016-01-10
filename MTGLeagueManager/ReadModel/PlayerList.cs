@@ -1,15 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MTGLeagueManager.Core;
 using MTGLeagueManager.Events;
+using MTGLeagueManager.Repository;
 
 namespace MTGLeagueManager.ReadModel
 {
-    public class PlayerList : ISubscribeTo<PlayerCreated>, ISubscribeTo<PlayerRemoved>, IPlayerListQueries
+    public class PlayerList : ISubscribeTo<PlayerCreated>, ISubscribeTo<PlayerRemoved>, ISubscribeTo<PlayerRenamed>, IPlayerListQueries
     {
-        public List<PlayerItem> Players = new List<PlayerItem>();
+        private readonly IPlayerRepository _repository;
+        public List<Player> Players = new List<Player>();
 
-        public List<PlayerItem> GetPlayers()
+        public PlayerList(IPlayerRepository repository)
+        {
+            _repository = repository;
+        }
+
+        public List<Player> GetPlayers()
         {
             lock (Players)
             {
@@ -21,7 +27,7 @@ namespace MTGLeagueManager.ReadModel
         {
             lock (Players)
             {
-                Players.Add(new PlayerItem() { Id = e.Id, Name = e.Name });
+                Players.Add(new Player() { Id = e.Id, Name = e.Name });
             }
         }
 
@@ -32,11 +38,14 @@ namespace MTGLeagueManager.ReadModel
                 Players.RemoveAll(p => p.Id == e.Id);
             }
         }
-    }
 
-    public class PlayerItem
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
+        public void Handle(PlayerRenamed e)
+        {
+            lock (Players)
+            {
+                var pl = Players.Find(p => p.Id == e.Id);
+                pl.Name = e.NewName;
+            }
+        }
     }
 }

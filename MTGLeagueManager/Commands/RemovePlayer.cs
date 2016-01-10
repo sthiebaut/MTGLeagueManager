@@ -4,11 +4,11 @@ namespace MTGLeagueManager.Commands
 {
     public class RemovePlayer : Command
     {
-        public Guid PlayerId;
+        public Guid Id;
 
-        public RemovePlayer(Guid playerId)
+        public RemovePlayer(Guid id)
         {
-            PlayerId = playerId;
+            Id = id;
         }
     }
 }

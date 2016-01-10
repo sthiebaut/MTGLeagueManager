@@ -5,9 +5,8 @@ namespace MTGLeagueManager
     #region Player
     public class PlayerAlreadyCreated : Exception { }
 
-    public class PlayerNotCreated : Exception { }
+    public class PlayerNotExist : Exception { }
 
-    public class PlayerAlreadyRemoved : Exception { }
     #endregion
 
     #region Match

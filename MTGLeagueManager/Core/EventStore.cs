@@ -25,10 +25,10 @@ namespace MTGLeagueManager.Core
                 var returnedEvent = resolvedEvent.Event;
 
                 var body = Encoding.UTF8.GetString(returnedEvent.Data);
-                Console.WriteLine("Read event with data: {0}, metadata: {1}, type:{2}",
+                /*Console.WriteLine("Read event with data: {0}, metadata: {1}, type:{2}",
                     body,
                     Encoding.UTF8.GetString(returnedEvent.Metadata),
-                    returnedEvent.EventType);
+                    returnedEvent.EventType);*/
 
                 yield return DeserializeEvent(returnedEvent.EventType, body);
             }

@@ -1,5 +1,6 @@
 ﻿using MTGLeagueManager.Core;
 using MTGLeagueManager.ReadModel;
+using MTGLeagueManager.Repository;
 
 namespace MTGLeagueManager
 {
@@ -12,12 +13,11 @@ namespace MTGLeagueManager
         {
             Dispatcher = new MessageDispatcher(new Core.EventStore());
 
-            Dispatcher.ScanInstance(new PlayerAggregate());
+            var playerRepository = new PlayerRepository();
+            Dispatcher.ScanInstance(new PlayerAggregate(playerRepository));
 
-            PlayerListQueries = new PlayerList();
+            PlayerListQueries = new PlayerList(playerRepository);
             Dispatcher.ScanInstance(PlayerListQueries);
-
-            
         }
     }
 }

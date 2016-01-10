@@ -4,8 +4,8 @@ namespace MTGLeagueManager.Events
 {
     public class PlayerRenamed : Event
     {
-        public readonly Guid Id;
-        public readonly string NewName;
+        public Guid Id { get; set; }
+        public string NewName { get; set; }
 
         public PlayerRenamed(){ }
 

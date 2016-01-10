@@ -3,60 +3,65 @@ using System.Collections;
 using MTGLeagueManager.Commands;
 using MTGLeagueManager.Core;
 using MTGLeagueManager.Events;
+using MTGLeagueManager.ReadModel;
 using MTGLeagueManager.Repository;
 
 namespace MTGLeagueManager
 {
     public class PlayerAggregate : Aggregate, 
         IHandleCommand<CreatePlayer>, IHandleCommand<RenamePlayer>, IHandleCommand<RemovePlayer>,
-        IApplyEvent<PlayerCreated>, IApplyEvent<PlayerRemoved>
+        IApplyEvent<PlayerCreated>, IApplyEvent<PlayerRemoved>, IApplyEvent<PlayerRenamed>
     {
-        public string Name { get; private set; }
-        public bool IsRemoved { get; private set; }
+        private readonly IPlayerRepository _repository;
 
-        public PlayerAggregate() { }
-        
+        public PlayerAggregate()
+        {
+            _repository = new InMemoryPlayerRepository();
+        }
+
+        public PlayerAggregate(IPlayerRepository repository)
+        {
+            _repository = repository;
+        }
 
         #region Command Handlers
 
         public IEnumerable Handle(CreatePlayer c)
         {
-            //if (Id == c.Id)
-            //    throw new PlayerAlreadyCreated();
+            if (_repository.GetByIdAsync(c.Id) != null)
+                throw new PlayerAlreadyCreated();
+
+            _repository.AddAsync(new Player { Id = c.Id, Name = c.Name });
 
             yield return new PlayerCreated(c.Id, c.Name);
         }
 
         public IEnumerable Handle(RenamePlayer c)
         {
-            if (Id == Guid.Empty)
-                throw new PlayerNotCreated();
+            if (_repository.GetByIdAsync(c.Id) == null)
+                throw new PlayerNotExist();
 
-            yield return new PlayerRenamed(c.PlayerId, c.NewName);
+            _repository.RenameAsync(c.Id, c.NewName);
+
+            yield return new PlayerRenamed(c.Id, c.NewName);
         }
 
         public IEnumerable Handle(RemovePlayer c)
         {
-            if (Id == Guid.Empty)
-                throw new PlayerNotCreated();
+            if (_repository.GetByIdAsync(c.Id) == null)           
+                throw new PlayerNotExist();
 
-            if (IsRemoved)
-                throw new PlayerAlreadyRemoved();
+            _repository.RemoveAsync(c.Id);
 
-            yield return new PlayerRemoved(c.PlayerId);
+            yield return new PlayerRemoved(c.Id);
         }
         
         #endregion
 
-        public void Apply(PlayerCreated e)
-        {
-            Id = e.Id;
-            Name = e.Name;
-        }
+        public void Apply(PlayerCreated e) { }
 
-        public void Apply(PlayerRemoved e)
-        {
-            IsRemoved = true;
-        }
+        public void Apply(PlayerRemoved e) { }
+
+        public void Apply(PlayerRenamed e) { }
     }
 }

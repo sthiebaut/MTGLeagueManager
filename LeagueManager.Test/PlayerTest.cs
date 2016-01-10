@@ -48,7 +48,7 @@ namespace LeagueManager.Test
             Test(
                 Given(),
                 When(new RenamePlayer(_testId, "newName")),
-                ThenFailWith<PlayerNotCreated>());
+                ThenFailWith<PlayerNotExist>());
         }
 
         [Test]
@@ -67,7 +67,7 @@ namespace LeagueManager.Test
             Test(
                 Given(),
                 When(new RemovePlayer(_testId)),
-                ThenFailWith<PlayerNotCreated>()
+                ThenFailWith<PlayerNotExist>()
             );
         }
 
@@ -89,7 +89,7 @@ namespace LeagueManager.Test
                  Given(new PlayerCreated(_testId, _name),
                        new PlayerRemoved(_testId)),
                 When(new RemovePlayer(_testId)),
-                ThenFailWith<PlayerAlreadyRemoved>()
+                ThenFailWith<PlayerNotExist>()
             );
         }
 
